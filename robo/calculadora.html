@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quanto cobrar? Calculadora para editores</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ECEDEF;--panel:#F8F8F9;--ink:#161A22;--mute:#5B6270;--line:#D3D6DC;--acc:#2D5BFF;--focus:#2D5BFF}
+@media (prefers-color-scheme:dark){:root{--bg:#171A21;--panel:#20242D;--ink:#ECEDEF;--mute:#9AA1AE;--line:#343946;--acc:#7F9BFF;--focus:#7F9BFF}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:32px 20px 80px}
+h1{font:800 clamp(2rem,6vw,3.2rem)/1.02 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 10px}
+h2{font:600 1.05rem "Bricolage Grotesque",sans-serif;margin:0 0 12px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:62ch}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px}
+.tabs a{padding:8px 14px;border:1px solid var(--line);border-radius:99px;color:var(--mute);text-decoration:none;font-weight:500}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:block;font-size:.9rem;color:var(--mute)}
+input,select{width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.chk{display:flex;gap:8px;align-items:center;margin:6px 0;color:var(--ink)}.chk input{width:auto;margin:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.res div{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--panel)}
+.res small{color:var(--mute)}.res b{display:block;font:800 1.7rem "Bricolage Grotesque",sans-serif}
+.res .ideal{border:2px solid var(--acc)}
+.note{color:var(--mute);font-size:.88rem;max-width:68ch}
+summary{cursor:pointer;font-weight:500}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <nav class="tabs"><a href="index.html">Vagas</a><a href="calculadora.html" aria-current="page">Quanto cobrar?</a><a href="canais.html">Canais e nichos</a></nav>
+  <h1>Quanto cobrar?</h1>
+  <p class="sub">Monte o preço do seu serviço em 1 minuto: escolha o tipo de edição, o nível e os extras. O resultado atualiza sozinho.</p>
+
+  <section class="card"><h2>1. O que você vai editar?</h2>
+    <div class="grid">
+      <label>Tipo<select id="tipo"><option value="longo">Vídeo longo (YouTube, podcast, live)</option><option value="short">Short (Shorts, Reels, TikTok)</option><option value="thumb">Thumbnail</option></select></label>
+      <label id="qtdl">Minutos de vídeo final<input id="qtd" type="number" min="1" value="10"></label>
+      <label>Nível da edição<select id="nivel"><option value="0">Básico (cortes, áudio, legenda simples)</option><option value="1" selected>Intermediário (ritmo, B-roll, efeitos)</option><option value="2">Avançado (storytelling, motion, cor)</option></select></label>
+    </div></section>
+
+  <section class="card"><h2>2. Extras</h2>
+    <label class="chk"><input type="checkbox" data-p="25"> Motion graphics (+25%)</label>
+    <label class="chk"><input type="checkbox" data-p="10"> Legendas animadas (+10%)</label>
+    <label class="chk"><input type="checkbox" data-p="15"> Sound design e trilha (+15%)</label>
+    <label class="chk"><input type="checkbox" data-p="15"> Revisões ilimitadas (+15%)</label>
+    <label class="chk"><input type="checkbox" data-p="30"> Entrega urgente em até 24 h (+30%)</label></section>
+
+  <section class="card"><h2>3. Volume e moeda</h2>
+    <div class="grid">
+      <label>Entregas por mês<input id="vol" type="number" min="1" value="8"></label>
+      <label>Horas que você leva por entrega<input id="hrs" type="number" min="0.5" step="0.5" value="4"></label>
+      <label>Moeda<select id="moeda"><option value="USD">Dólar (US$)</option><option value="BRL">Real (R$)</option></select></label>
+      <label>Cotação do dólar em reais (edite)<input id="fx" type="number" min="1" step="0.01" value="5.50"></label>
+    </div></section>
+
+  <section class="card"><h2>Resultado por entrega</h2>
+    <div class="res">
+      <div><small>Mínimo (não aceite menos)</small><b id="rmin"></b></div>
+      <div class="ideal"><small>Ideal (quanto pedir)</small><b id="rid"></b></div>
+      <div><small>Premium (cliente exigente)</small><b id="rpr"></b></div>
+    </div>
+    <p id="mes" style="margin:14px 0 0"></p>
+  </section>
+
+  <details class="card"><summary>Ajustar valores base (US$ por unidade)</summary>
+    <p class="note">Ponto de partida meu, não a tabela de nenhuma escola. Pesquise o que clientes do seu nicho pagam e edite aqui.</p>
+    <div class="grid" id="base"></div></details>
+  <p class="note">É uma estimativa para orientar sua proposta. O preço final depende do seu portfólio, do cliente e do mercado.</p>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const B={longo:[8,15,28],short:[10,18,30],thumb:[15,30,60]};
+const NM={longo:"Vídeo longo (por minuto)",short:"Short (por peça)",thumb:"Thumbnail (por peça)"};
+const LB={longo:"Minutos de vídeo final",short:"Quantidade de shorts",thumb:"Quantidade de thumbnails"};
+const NV=["Básico","Intermediário","Avançado"];
+for(const k in B){B[k].forEach((v,i)=>{const l=document.createElement("label");l.textContent=NM[k]+" · "+NV[i];
+  const n=document.createElement("input");n.type="number";n.min="1";n.value=v;n.oninput=()=>{B[k][i]=+n.value||0;calc()};l.append(n);$("#base").append(l)})}
+function calc(){
+  const t=$("#tipo").value;$("#qtdl").firstChild.textContent=LB[t];
+  const extra=[...document.querySelectorAll("[data-p]")].reduce((a,c)=>a+(c.checked?+c.dataset.p:0),0)/100;
+  const usd=B[t][+$("#nivel").value]*(+$("#qtd").value||0)*(1+extra);
+  const f=$("#moeda").value==="BRL"?+$("#fx").value||1:1,cur=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:$("#moeda").value,maximumFractionDigits:0}).format(v*f);
+  const mn=usd,id=usd*1.2,pr=usd*1.45,vol=+$("#vol").value||0,h=+$("#hrs").value||1;
+  $("#rmin").textContent=cur(mn);$("#rid").textContent=cur(id);$("#rpr").textContent=cur(pr);
+  $("#mes").textContent=`Com ${vol} entregas por mês no preço ideal: ${cur(id*vol)} por mês. Isso dá cerca de ${cur(id/h)} por hora (e ${cur(mn/h)} por hora no mínimo).`;
+}
+document.querySelectorAll("input,select").forEach(e=>e.addEventListener("input",calc));
+calc();
+</script>
+</body>
+</html>
