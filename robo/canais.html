@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canais e nichos para prospectar</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ECEDEF;--panel:#F8F8F9;--ink:#161A22;--mute:#5B6270;--line:#D3D6DC;--acc:#2D5BFF;--focus:#2D5BFF}
+@media (prefers-color-scheme:dark){:root{--bg:#171A21;--panel:#20242D;--ink:#ECEDEF;--mute:#9AA1AE;--line:#343946;--acc:#7F9BFF;--focus:#7F9BFF}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:32px 20px 80px}
+h1{font:800 clamp(2rem,6vw,3.2rem)/1.02 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 10px}
+h2{font:600 1.05rem "Bricolage Grotesque",sans-serif;margin:0 0 12px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:64ch}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px}
+.tabs a{padding:8px 14px;border:1px solid var(--line);border-radius:99px;color:var(--mute);text-decoration:none;font-weight:500}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+label{display:block;font-size:.9rem;color:var(--mute)}
+input,select,button{font:inherit}
+input,select{width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+button,.btn{cursor:pointer;border:1px solid var(--line);background:none;color:var(--ink);padding:9px 14px;border-radius:8px;text-decoration:none;display:inline-block}
+.go{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.chips button{border-radius:99px;padding:3px 12px;font-size:.88rem}
+.note{color:var(--mute);font-size:.88rem;max-width:70ch}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.row b{font:600 1.02rem "Bricolage Grotesque",sans-serif}.m{color:var(--mute);font-size:.9rem}
+.row input,.row select{width:auto;min-width:140px;margin:0}.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;grid-column:1/-1}
+.pills button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.err{color:#C62828}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <nav class="tabs"><a href="index.html">Vagas</a><a href="calculadora.html">Quanto cobrar?</a><a href="canais.html" aria-current="page">Canais e nichos</a></nav>
+  <h1>Canais e nichos</h1>
+  <p class="sub">Ache criadores do YouTube que podem contratar um editor, por nicho, país e tamanho. Salve os canais, acompanhe o contato e exporte a lista.</p>
+
+  <section class="card"><h2>Buscar canais</h2>
+    <label>Nichos (até 3, separados por vírgula)<input id="niches" placeholder="ex.: podcast, finanças, games"></label>
+    <div class="chips" id="chips"></div>
+    <div class="grid">
+      <label>País<select id="cc"><option>BR</option><option>US</option><option>PT</option><option>MX</option><option>AR</option><option>ES</option><option>FR</option><option>DE</option><option>IT</option><option>GB</option><option>CA</option><option>AU</option></select></label>
+      <label>Mín. de inscritos<input id="min" type="number" value="1000"></label>
+      <label>Máx. de inscritos<input id="max" type="number" value="100000"></label>
+    </div>
+    <p style="margin:14px 0 0"><button class="go" id="busca">Buscar com a chave</button> <button id="semchave">Abrir busca no YouTube (sem chave)</button></p>
+    <p class="note" id="msg" aria-live="polite"></p>
+  </section>
+
+  <details class="card"><summary><b>Chave da API do YouTube</b> (necessária para buscar aqui dentro)</summary>
+    <p class="note">É grátis e fica só no seu navegador. No Google Cloud Console: crie um projeto, ative a “YouTube Data API v3” e crie uma chave em Credenciais. Restrinja a chave ao seu site (referenciador HTTP) para ninguém usar a cota por você. Cada busca por nicho gasta 100 dos 10.000 pontos diários.</p>
+    <label>Sua chave<input id="key" type="password" autocomplete="off" placeholder="AIza..."></label>
+    <p><button id="salva">Salvar chave neste navegador</button></p>
+    <p class="note">O e-mail público do canal não vem pela API. Use o botão “Sobre” de cada canal para ver os contatos que o criador deixou.</p>
+  </details>
+
+  <section class="card"><h2>Meus canais salvos <span class="m" id="tot"></span></h2>
+    <div class="pills" id="pills"></div>
+    <div id="list"></div>
+    <p style="margin:14px 0 0"><button id="csv">Exportar CSV</button> <button id="limpa">Apagar todos</button></p>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const ST=["Não contatado","Contatado","Respondeu","Parceria","Recusou"];
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+let leads=[],filtro="";
+try{leads=JSON.parse(localStorage.getItem("leads")||"[]");$("#key").value=localStorage.getItem("yt_key")||""}catch(e){}
+const save=()=>{try{localStorage.setItem("leads",JSON.stringify(leads))}catch(e){}};
+["Podcast","Finanças","Games","Fitness","Cursos online","Cinema","Tecnologia","Culinária","Negócios","Educação"].forEach(n=>{
+  const b=el("button",null,n);b.onclick=()=>{const v=$("#niches").value.split(",").map(s=>s.trim()).filter(Boolean);
+    if(!v.includes(n.toLowerCase())&&v.length<3){v.push(n.toLowerCase());$("#niches").value=v.join(", ")}};$("#chips").append(b)});
+const niches=()=>$("#niches").value.split(",").map(s=>s.trim()).filter(Boolean).slice(0,3);
+$("#salva").onclick=()=>{try{localStorage.setItem("yt_key",$("#key").value.trim());$("#msg").textContent="Chave salva neste navegador."}catch(e){}};
+$("#semchave").onclick=()=>{const n=niches();if(!n.length){$("#msg").textContent="Digite pelo menos um nicho.";return}
+  n.forEach(x=>window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(x)+"&sp=EgIQAg%253D%253D","_blank","noopener"))};
+async function yt(path,p){const u=new URL("https://www.googleapis.com/youtube/v3/"+path);
+  Object.entries({...p,key:$("#key").value.trim()}).forEach(([k,v])=>u.searchParams.set(k,v));
+  const r=await fetch(u),j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||r.status);return j}
+$("#busca").onclick=async()=>{
+  const n=niches(),msg=$("#msg");msg.className="note";
+  if(!n.length)return void(msg.textContent="Digite pelo menos um nicho.");
+  if(!$("#key").value.trim())return void(msg.textContent="Cole sua chave do YouTube abaixo, ou use a busca sem chave.");
+  msg.textContent=`Buscando… (gasta cerca de ${n.length*101} pontos da cota diária)`;
+  try{let add=0,vistos=0;const min=+$("#min").value||0,max=+$("#max").value||1e12;
+    for(const q of n){
+      const s=await yt("search",{part:"snippet",type:"channel",q,regionCode:$("#cc").value,maxResults:50});
+      const ids=s.items.map(i=>i.snippet.channelId||i.id.channelId);if(!ids.length)continue;
+      const c=await yt("channels",{part:"snippet,statistics",id:ids.join(",")});
+      for(const ch of c.items){vistos++;const st=ch.statistics||{},subs=+st.subscriberCount;
+        if(st.hiddenSubscriberCount||!(subs>=min&&subs<=max)||leads.some(l=>l.id===ch.id))continue;
+        leads.push({id:ch.id,title:ch.snippet.title,handle:ch.snippet.customUrl||"",subs,country:ch.snippet.country||$("#cc").value,niche:q,status:ST[0],note:""});add++}}
+    save();render();msg.textContent=`Pronto: ${vistos} canais analisados, ${add} novos salvos.`;
+  }catch(e){msg.className="note err";msg.textContent="Erro da API: "+e.message}};
+function render(){
+  $("#tot").textContent=`(${leads.length})`;
+  const pills=$("#pills");pills.replaceChildren();
+  ["",...ST].forEach(s=>{const k=s?leads.filter(l=>l.status===s).length:leads.length,b=el("button",null,(s||"Todos")+" "+k);
+    b.setAttribute("aria-pressed",filtro===s);b.onclick=()=>{filtro=s;render()};pills.append(b)});
+  const list=$("#list");list.replaceChildren();
+  const rows=leads.filter(l=>!filtro||l.status===filtro);
+  if(!rows.length)list.append(el("p","note","Nenhum canal ainda. Faça uma busca para começar."));
+  for(const l of rows){
+    const r=el("div","row"),h=el("div"),a=el("a",null,l.title);a.href="https://www.youtube.com/channel/"+l.id;a.target="_blank";a.rel="noopener noreferrer";
+    const b=el("b");b.append(a);h.append(b,el("div","m",[l.handle,l.subs.toLocaleString("pt-BR")+" inscritos",l.country,l.niche].filter(Boolean).join(" • ")));
+    const sel=el("select");ST.forEach(s=>{const o=el("option",null,s);o.value=s;sel.append(o)});sel.value=l.status;sel.onchange=()=>{l.status=sel.value;save();render()};
+    const nt=el("input");nt.placeholder="Anotação";nt.value=l.note;nt.onchange=()=>{l.note=nt.value;save()};
+    const ab=el("a","btn","Sobre / contatos");ab.href="https://www.youtube.com/channel/"+l.id+"/about";ab.target="_blank";ab.rel="noopener noreferrer";
+    const rm=el("button",null,"Remover");rm.onclick=()=>{leads=leads.filter(x=>x!==l);save();render()};
+    const ac=el("div","acts");ac.append(sel,nt,ab,rm);r.append(h,el("span"),ac);list.append(r)}}
+$("#csv").onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const t=["Canal;Handle;Inscritos;País;Nicho;Status;Nota;Link",...leads.map(l=>[l.title,l.handle,l.subs,l.country,l.niche,l.status,l.note,"https://www.youtube.com/channel/"+l.id].map(q).join(";"))].join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+t],{type:"text/csv"}));a.download="canais.csv";a.click()};
+$("#limpa").onclick=()=>{if(confirm("Apagar todos os canais salvos?")){leads=[];save();render()}};
+render();
+</script>
+</body>
+</html>
